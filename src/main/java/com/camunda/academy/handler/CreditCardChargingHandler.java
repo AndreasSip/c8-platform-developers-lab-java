@@ -4,11 +4,13 @@ import com.camunda.academy.services.CreditCardService;
 import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
 import io.camunda.zeebe.client.api.worker.JobHandler;
-
 import java.util.HashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CreditCardChargingHandler implements JobHandler {
+  private static final Logger LOG = LoggerFactory.getLogger(CreditCardChargingHandler.class);
   private final CreditCardService creditCardService;
 
   public CreditCardChargingHandler(CreditCardService creditCardService) {
@@ -23,7 +25,12 @@ public class CreditCardChargingHandler implements JobHandler {
     String expiryDate = (String) job.getVariablesAsMap().get("expiryDate");
     Double amount = (Double) job.getVariablesAsMap().get("openAmount");
     // execute business logic
-    creditCardService.chargeAmount(cardNumber, cvc, expiryDate, amount);
+    try {
+      creditCardService.chargeAmount(cardNumber, cvc, expiryDate, amount);
+    } catch (IllegalStateException e) {
+      System.err.println(e.getMessage());
+      client.newFailCommand(job).retries(0).errorMessage(e.getMessage()).send().join();
+    }
     Map<String, Object> result = new HashMap<>();
     result.put("openAmount", 0);
     // return result
