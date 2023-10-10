@@ -2,7 +2,8 @@ package com.camunda.academy;
 
 import com.camunda.academy.handler.CreditCardChargingHandler;
 import com.camunda.academy.handler.CreditDeductionJobHandler;
-import com.camunda.academy.handler.YourJobHandler;
+import com.camunda.academy.handler.PaymentCompletionHandler;
+import com.camunda.academy.handler.PaymentInvocationHandler;
 import com.camunda.academy.services.CreditCardService;
 import com.camunda.academy.services.CustomerService;
 import io.camunda.zeebe.client.ZeebeClient;
@@ -55,6 +56,18 @@ public class PaymentApplication {
               .jobType("credit-card-charging")
               .handler(new CreditCardChargingHandler(new CreditCardService()))
               .open();
+      final JobWorker paymentInvocationWorker =
+          client
+              .newWorker()
+              .jobType("payment-invocation")
+              .handler(new PaymentInvocationHandler(client))
+              .open();
+      final JobWorker paymentCompletionWorker =
+          client
+              .newWorker()
+              .jobType("payment-completion")
+              .handler(new PaymentCompletionHandler(client))
+              .open();
 
       // Terminate the worker with an Integer input
       Scanner sc = new Scanner(System.in);
@@ -62,6 +75,8 @@ public class PaymentApplication {
       sc.close();
       creditDeductionWorker.close();
       creditCardChargingWorker.close();
+      paymentInvocationWorker.close();
+      paymentCompletionWorker.close();
 
     } catch (Exception e) {
       e.printStackTrace();

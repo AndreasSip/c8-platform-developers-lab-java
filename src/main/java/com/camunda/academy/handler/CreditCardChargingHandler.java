@@ -5,6 +5,9 @@ import io.camunda.zeebe.client.api.response.ActivatedJob;
 import io.camunda.zeebe.client.api.worker.JobClient;
 import io.camunda.zeebe.client.api.worker.JobHandler;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class CreditCardChargingHandler implements JobHandler {
   private final CreditCardService creditCardService;
 
@@ -21,6 +24,10 @@ public class CreditCardChargingHandler implements JobHandler {
     Double amount = (Double) job.getVariablesAsMap().get("openAmount");
     // execute business logic
     creditCardService.chargeAmount(cardNumber, cvc, expiryDate, amount);
+    Map<String, Object> result = new HashMap<>();
+    result.put("openAmount", 0);
+    // return result
+    client.newCompleteCommand(job).variables(result).send().join();
     // return results
     client.newCompleteCommand(job).send().join();
   }
