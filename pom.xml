@@ -23,6 +23,12 @@
 	    <artifactId>zeebe-client-java</artifactId>
 	    <version>8.2.15</version>
 	</dependency>
+    <dependency>
+      <groupId>io.camunda</groupId>
+      <artifactId>zeebe-process-test-extension</artifactId>
+      <version>8.2.15</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 <!--  <build>-->

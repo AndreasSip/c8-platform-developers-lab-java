@@ -29,7 +29,12 @@ public class CreditCardChargingHandler implements JobHandler {
       creditCardService.chargeAmount(cardNumber, cvc, expiryDate, amount);
     } catch (IllegalStateException e) {
       System.err.println(e.getMessage());
-      client.newFailCommand(job).retries(0).errorMessage(e.getMessage()).send().join();
+      client
+          .newThrowErrorCommand(job)
+          .errorCode("creditCardChargeError")
+          .errorMessage(e.getMessage())
+          .send()
+          .join();
     }
     Map<String, Object> result = new HashMap<>();
     result.put("openAmount", 0);
